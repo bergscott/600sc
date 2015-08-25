@@ -66,7 +66,9 @@ class RectangularRoom(object):
         width: an integer > 0
         height: an integer > 0
         """
-        raise NotImplementedError
+        self.width = width
+        self.height = height
+        self.clean_tiles = {} 
     
     def cleanTileAtPosition(self, pos):
         """
@@ -76,7 +78,9 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        raise NotImplementedError
+        xy = (int(math.floor(pos.getX())), int(math.floor(pos.getY())))
+        if not xy in self.clean_tiles:
+            self.clean_tiles[xy] = 0
 
     def isTileCleaned(self, m, n):
         """
@@ -88,7 +92,7 @@ class RectangularRoom(object):
         n: an integer
         returns: True if (m, n) is cleaned, False otherwise
         """
-        raise NotImplementedError
+        return (m, n) in self.clean_tiles
     
     def getNumTiles(self):
         """
@@ -96,7 +100,7 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        raise NotImplementedError
+        return self.width * self.height
 
     def getNumCleanedTiles(self):
         """
@@ -104,7 +108,17 @@ class RectangularRoom(object):
 
         returns: an integer
         """
-        raise NotImplementedError
+        return len(self.clean_tiles.keys())
+
+    def getCleanedTiles(self):
+        """
+        Return a sorted list of clean tiles in the room.
+
+        returns: a list of tuples of (int, int)
+        """
+        clean_tiles = self.clean_tiles.keys()
+        clean_tiles.sort()
+        return clean_tiles
 
     def getRandomPosition(self):
         """
@@ -112,7 +126,9 @@ class RectangularRoom(object):
 
         returns: a Position object.
         """
-        raise NotImplementedError
+        x = random.uniform(0, self.width)
+        y = random.uniform(0, self.height)
+        return Position(x, y)
 
     def isPositionInRoom(self, pos):
         """
@@ -121,7 +137,7 @@ class RectangularRoom(object):
         pos: a Position object.
         returns: True if pos is in the room, False otherwise.
         """
-        raise NotImplementedError
+        return 0 <= pos.getX() < self.width and 0 <= pos.getY() < self.height
 
 
 class Robot(object):
@@ -230,10 +246,10 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
 
 # === Problem 4
 #
-# 1) How long does it take to clean 80% of a 20×20 room with each of 1-10 robots?
+# 1) How long does it take to clean 80% of a 20*20 room with each of 1-10 robots?
 #
 # 2) How long does it take two robots to clean 80% of rooms with dimensions 
-#	 20×20, 25×16, 40×10, 50×8, 80×5, and 100×4?
+#	 20*20, 25*16, 40*10, 50*8, 80*5, and 100*4?
 
 def showPlot1():
     """
