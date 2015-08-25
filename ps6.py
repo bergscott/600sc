@@ -78,7 +78,7 @@ class RectangularRoom(object):
 
         pos: a Position
         """
-        xy = (int(math.floor(pos.getX())), int(math.floor(pos.getY())))
+        xy = (int(pos.getX()), int(pos.getY()))
         if not xy in self.clean_tiles:
             self.clean_tiles[xy] = 0
 
@@ -139,6 +139,12 @@ class RectangularRoom(object):
         """
         return 0 <= pos.getX() < self.width and 0 <= pos.getY() < self.height
 
+def unit_test(result, expected):
+    if result == expected:
+        print "Test Passed!"
+    else:
+        raise AssertionError('result, ' + str(result) + \
+                ', does not match expected value, ' + str(expected))
 
 class Robot(object):
     """
@@ -159,7 +165,12 @@ class Robot(object):
         room:  a RectangularRoom object.
         speed: a float (speed > 0)
         """
-        raise NotImplementedError
+        #set initial attributes
+        self.position = room.getRandomPosition()
+        self.direction = random.uniform(0, 360)
+        self.speed = speed
+        #clean tile at robot's initial position
+        room.cleanTileAtPosition(self.position)
 
     def getRobotPosition(self):
         """
@@ -167,7 +178,7 @@ class Robot(object):
 
         returns: a Position object giving the robot's position.
         """
-        raise NotImplementedError
+        return self.position
     
     def getRobotDirection(self):
         """
@@ -176,7 +187,7 @@ class Robot(object):
         returns: an integer d giving the direction of the robot as an angle in
         degrees, 0 <= d < 360.
         """
-        raise NotImplementedError
+        return self.direction
 
     def setRobotPosition(self, position):
         """
@@ -184,7 +195,7 @@ class Robot(object):
 
         position: a Position object.
         """
-        raise NotImplementedError
+        self.position = position
 
     def setRobotDirection(self, direction):
         """
@@ -192,7 +203,7 @@ class Robot(object):
 
         direction: integer representing an angle in degrees
         """
-        raise NotImplementedError
+        self.direction = direction
 
     def updatePositionAndClean(self):
         """
@@ -202,6 +213,18 @@ class Robot(object):
         been cleaned.
         """
         raise NotImplementedError
+
+def test_room():
+    r1 = RectangularRoom(10, 10)
+    p1 = Position(2.3, 4.4)
+    bot1 = Robot(r1, 1.0)
+    unit_test(r1.isPositionInRoom(bot1.getRobotPosition()), True)
+    unit_test(r1.getNumCleanedTiles(), 1)
+    r1.cleanTileAtPosition(p1)
+    unit_test((2, 4) in r1.getCleanedTiles(), True)
+    unit_test(r1.getNumTiles(), 100)
+
+test_room()
 
 
 # === Problem 2
