@@ -46,6 +46,8 @@ class Position(object):
         new_x = old_x + delta_x
         new_y = old_y + delta_y
         return Position(new_x, new_y)
+    def __str__(self):
+        return '(' + str(self.x) + ', ' + str(self.y) + ')'
 
 # === Problems 1
 
@@ -169,8 +171,9 @@ class Robot(object):
         self.position = room.getRandomPosition()
         self.direction = random.uniform(0, 360)
         self.speed = speed
+        self.room = room
         #clean tile at robot's initial position
-        room.cleanTileAtPosition(self.position)
+        self.room.cleanTileAtPosition(self.position)
 
     def getRobotPosition(self):
         """
@@ -214,26 +217,13 @@ class Robot(object):
         """
         raise NotImplementedError
 
-def test_room():
-    r1 = RectangularRoom(10, 10)
-    p1 = Position(2.3, 4.4)
-    bot1 = Robot(r1, 1.0)
-    unit_test(r1.isPositionInRoom(bot1.getRobotPosition()), True)
-    unit_test(r1.getNumCleanedTiles(), 1)
-    r1.cleanTileAtPosition(p1)
-    unit_test((2, 4) in r1.getCleanedTiles(), True)
-    unit_test(r1.getNumTiles(), 100)
-
-test_room()
-
-
 # === Problem 2
 class StandardRobot(Robot):
     """
     A StandardRobot is a Robot with the standard movement strategy.
 
-    At each time-step, a StandardRobot attempts to move in its current direction; when
-    it hits a wall, it chooses a new direction randomly.
+    At each time-step, a StandardRobot attempts to move in its current 
+    direction; when it hits a wall, it chooses a new direction randomly.
     """
     def updatePositionAndClean(self):
         """
@@ -242,7 +232,55 @@ class StandardRobot(Robot):
         Move the robot to a new position and mark the tile it is on as having
         been cleaned.
         """
-        raise NotImplementedError
+        def move_bot(self, room, speed):
+            # base case
+            if speed <= 1.0:
+                temp_pos = self.position.getNewPosition(self.direction, speed)
+                # check that temp_pos is within confines of room
+                if room.isPositionInRoom(temp_pos):
+                    # update robot position and clean tile (DONE)
+                    self.setRobotPosition(temp_pos)
+                    room.cleanTileAtPosition(self.position)
+                else:
+                    # change direction and try again (recurse)
+                    self.setRobotDirection(random.uniform(0, 360))
+                    move_bot(self, room, speed)
+            # recursive case: move in steps of 1.0 unit
+            else: 
+                temp_pos = self.position.getNewPosition(self.direction, 1.0)
+                # check that temp_pos is within confines of room
+                if room.isPositionInRoom(temp_pos): 
+                    # update robot position, clean tile, and recurse with
+                    # speed - 1.0
+                    self.setRobotPosition(temp_pos)
+                    room.cleanTileAtPosition(self.position)
+                    move_bot(self, room, speed - 1.0)
+                else:          
+                    # change direction and try again (recurse)
+                    self.setRobotDirection(random.uniform(0, 360))
+                    move_bot(self, room, speed)
+        move_bot(self, self.room, self.speed)
+
+def test_room():
+    r1 = RectangularRoom(10, 10)
+    p1 = Position(2.3, 4.4)
+    bot1 = StandardRobot(r1, 3.0)
+    unit_test(r1.isPositionInRoom(bot1.getRobotPosition()), True)
+    unit_test(r1.getNumCleanedTiles(), 1)
+    r1.cleanTileAtPosition(p1)
+    unit_test((2, 4) in r1.getCleanedTiles(), True)
+    unit_test(r1.getNumTiles(), 100)
+    print str(bot1.getRobotPosition())
+    print str(r1.getCleanedTiles())
+    for i in range(10):
+        bot1.updatePositionAndClean()
+        print 'position: ' + str(bot1.getRobotPosition())
+        print 'direction: ' + str(bot1.getRobotDirection())
+        print 'cleaned tiles: ' + str(r1.getCleanedTiles())
+        print str(float(r1.getNumCleanedTiles()) / r1.getNumTiles() * 100) + \
+                ' percent cleaned.'
+
+test_room()
 
 # === Problem 3
 
@@ -306,3 +344,6 @@ def showPlot3():
     Produces a plot comparing the two robot strategies.
     """
     raise NotImplementedError
+
+
+
