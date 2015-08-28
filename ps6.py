@@ -399,7 +399,42 @@ class RandomWalkRobot(Robot):
     A RandomWalkRobot is a robot with the "random walk" movement strategy: it
     chooses a new direction at random after each time-step.
     """
-    raise NotImplementedError
+    def updatePositionAndClean(self):
+        """
+        Simulate the passage of a single time-step.
+
+        Move the robot to a new position and mark the tile it is on as having
+        been cleaned.
+        """
+        def move_bot(self, room, speed):
+            # base case
+            if speed <= 1.0:
+                temp_pos = self.position.getNewPosition(self.direction, speed)
+                # check that temp_pos is within confines of room
+                if room.isPositionInRoom(temp_pos):
+                    # update robot position, clean tile, and change direction
+                    self.setRobotPosition(temp_pos)
+                    room.cleanTileAtPosition(self.position)
+                    self.setRobotDirection(random.uniform(0, 360))
+                else:
+                    # change direction and try again (recurse)
+                    self.setRobotDirection(random.uniform(0, 360))
+                    move_bot(self, room, speed)
+            # recursive case: move in steps of 1.0 unit
+            else: 
+                temp_pos = self.position.getNewPosition(self.direction, 1.0)
+                # check that temp_pos is within confines of room
+                if room.isPositionInRoom(temp_pos): 
+                    # update robot position, clean tile, and recurse with
+                    # speed - 1.0
+                    self.setRobotPosition(temp_pos)
+                    room.cleanTileAtPosition(self.position)
+                    move_bot(self, room, speed - 1.0)
+                else:          
+                    # change direction and try again (recurse)
+                    self.setRobotDirection(random.uniform(0, 360))
+                    move_bot(self, room, speed)
+        move_bot(self, self.room, self.speed)
 
 
 # === Problem 6
@@ -411,7 +446,42 @@ def showPlot3():
     """
     Produces a plot comparing the two robot strategies.
     """
-    raise NotImplementedError
+    standard_avgs = []
+    random_walk_avgs = []
+    for n in xrange(1, 11):
+        avg = runSimulation(n, 1.0, 20, 20, .80, 100, StandardRobot)
+        standard_avgs.append(avg)
+        avg = runSimulation(n, 1.0, 20, 20, .80, 100, RandomWalkRobot)
+        random_walk_avgs.append(avg)
+    pylab.plot(range(1, 11), standard_avgs, label='StandardRobots')
+    pylab.plot(range(1, 11), random_walk_avgs, label='RandomWalkRobots')
+    pylab.legend(loc='upper right')
+    pylab.ylabel('Average Time')
+    pylab.xlabel('Number of Robots')
+    pylab.title('Time taken to clean 80% of a 20x20 room by\n' + \
+            '1-10 StandardRobots and 1-10 RandomWalkRobots')
+    pylab.show()
+
+def showPlot4():
+    """
+    Produces a plot comparing the two robot strategies.
+    """
+    standard_avgs = []
+    random_walk_avgs = []
+    for n in xrange(1, 11):
+        avg = runSimulation(1, n, 20, 20, .80, 100, StandardRobot)
+        standard_avgs.append(avg)
+        avg = runSimulation(1, n, 20, 20, .80, 100, RandomWalkRobot)
+        random_walk_avgs.append(avg)
+    pylab.plot(range(1, 11), standard_avgs, label='StandardRobots')
+    pylab.plot(range(1, 11), random_walk_avgs, label='RandomWalkRobots')
+    pylab.legend(loc='upper right')
+    pylab.ylabel('Average Time')
+    pylab.xlabel('Robot Speed')
+    pylab.title('Time taken to clean 80% of a 20x20 room by\n' + \
+            'StandardRobots and RandomWalkRobots with speeds 1-10')
+    pylab.show()
+
 
 
 
