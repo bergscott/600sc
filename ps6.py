@@ -112,6 +112,14 @@ class RectangularRoom(object):
         """
         return len(self.clean_tiles.keys())
 
+    def getPercentCleaned(self):
+        """
+        Return a float representing a percentage of the room that is cleaned.
+
+        returns: a float (0 <= result <= 1.0)
+        """
+        return float(self.getNumCleanedTiles()) / self.getNumTiles()
+
     def getCleanedTiles(self):
         """
         Return a sorted list of clean tiles in the room.
@@ -261,26 +269,26 @@ class StandardRobot(Robot):
                     move_bot(self, room, speed)
         move_bot(self, self.room, self.speed)
 
-def test_room():
-    r1 = RectangularRoom(10, 10)
-    p1 = Position(2.3, 4.4)
-    bot1 = StandardRobot(r1, 3.0)
-    unit_test(r1.isPositionInRoom(bot1.getRobotPosition()), True)
-    unit_test(r1.getNumCleanedTiles(), 1)
-    r1.cleanTileAtPosition(p1)
-    unit_test((2, 4) in r1.getCleanedTiles(), True)
-    unit_test(r1.getNumTiles(), 100)
-    print str(bot1.getRobotPosition())
-    print str(r1.getCleanedTiles())
-    for i in range(10):
-        bot1.updatePositionAndClean()
-        print 'position: ' + str(bot1.getRobotPosition())
-        print 'direction: ' + str(bot1.getRobotDirection())
-        print 'cleaned tiles: ' + str(r1.getCleanedTiles())
-        print str(float(r1.getNumCleanedTiles()) / r1.getNumTiles() * 100) + \
-                ' percent cleaned.'
-
-test_room()
+# def test_room():
+#     r1 = RectangularRoom(10, 10)
+#     p1 = Position(2.3, 4.4)
+#     bot1 = StandardRobot(r1, 3.0)
+#     unit_test(r1.isPositionInRoom(bot1.getRobotPosition()), True)
+#     unit_test(r1.getNumCleanedTiles(), 1)
+#     r1.cleanTileAtPosition(p1)
+#     unit_test((2, 4) in r1.getCleanedTiles(), True)
+#     unit_test(r1.getNumTiles(), 100)
+#     print str(bot1.getRobotPosition())
+#     print str(r1.getCleanedTiles())
+#     for i in range(10):
+#         bot1.updatePositionAndClean()
+#         print 'position: ' + str(bot1.getRobotPosition())
+#         print 'direction: ' + str(bot1.getRobotDirection())
+#         print 'cleaned tiles: ' + str(r1.getCleanedTiles())
+#         print str(float(r1.getNumCleanedTiles()) / r1.getNumTiles() * 100) + \
+#                 ' percent cleaned.'
+# 
+# test_room()
 
 # === Problem 3
 
@@ -302,15 +310,63 @@ def runSimulation(num_robots, speed, width, height, min_coverage, num_trials,
     robot_type: class of robot to be instantiated (e.g. Robot or
                 RandomWalkRobot)
     """
-    raise NotImplementedError
+    total_time = 0
+    for t in xrange(num_trials):
+        # anim = ps6_visualize.RobotVisualization(num_robots, width, height)
+        room = RectangularRoom(width, height)
+        robots = get_robots(num_robots, speed, room, robot_type)
+        time_steps = 0
+        while room.getPercentCleaned() < min_coverage:
+            time_steps += 1
+            move_robots(robots)
+            # anim.update(room, robots)
+        # anim.done()
+        # print str(min_coverage * 100) + '% of ' + str(room.getNumTiles()) + \
+        #         '-tile room was cleaned in ' + str(time_steps) + ' time steps.'
+        total_time += time_steps
+    return float(total_time) / num_trials
 
+def get_robots(n, speed, room, robot_type):
+    """
+    Returns a list of n robots with speed, speed, in room, room. Robots, when
+    created, are given random starting positions and directions. robot_type
+    specifies the type of robots created
+    
+    n: an int (n > 0)
+    speed: a float (speed > 0)
+    room: a RectangularRoom
+    robot_type: class of robot to be instantiated (e.g. StandardRobot or
+                RandomWalkRobot)
+    """
+    robots = []
+    for r in xrange(n):
+        robots.append(robot_type(room, speed))
+    return robots
+
+def move_robots(robots):
+    """
+    Moves each robot in robots according to their speed and direction and cleans
+    the tiles at each robot's position.
+    
+    robots: a list of Robot (or subclass of Robot)
+    """
+    for r in robots:
+        r.updatePositionAndClean()
 
 # === Problem 4
 #
 # 1) How long does it take to clean 80% of a 20*20 room with each of 1-10 robots?
-#
+for n in xrange(1, 11):
+    avg = runSimulation(n, 1.0, 20, 20, .80, 50, StandardRobot)
+    print str(n) + ' robots clean 80% of a 20x20 room in, on average, ' + \
+            str(avg) + ' time steps.'
+# 
 # 2) How long does it take two robots to clean 80% of rooms with dimensions 
 #	 20*20, 25*16, 40*10, 50*8, 80*5, and 100*4?
+for d in ((20, 20), (25, 16), (40, 10), (50, 8), (80, 5), (100, 4)):
+    avg = runSimulation(2, 1.0, d[0], d[1], .80, 50, StandardRobot)
+    print '2 robots clean 80% of a {0!s}x{1!s} room in, '.format(d[0], d[1]) + \
+            'on average, {!s} time steps.'.format(avg)
 
 def showPlot1():
     """
