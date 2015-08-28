@@ -356,30 +356,42 @@ def move_robots(robots):
 # === Problem 4
 #
 # 1) How long does it take to clean 80% of a 20*20 room with each of 1-10 robots?
-for n in xrange(1, 11):
-    avg = runSimulation(n, 1.0, 20, 20, .80, 50, StandardRobot)
-    print str(n) + ' robots clean 80% of a 20x20 room in, on average, ' + \
-            str(avg) + ' time steps.'
 # 
 # 2) How long does it take two robots to clean 80% of rooms with dimensions 
 #	 20*20, 25*16, 40*10, 50*8, 80*5, and 100*4?
-for d in ((20, 20), (25, 16), (40, 10), (50, 8), (80, 5), (100, 4)):
-    avg = runSimulation(2, 1.0, d[0], d[1], .80, 50, StandardRobot)
-    print '2 robots clean 80% of a {0!s}x{1!s} room in, '.format(d[0], d[1]) + \
-            'on average, {!s} time steps.'.format(avg)
 
 def showPlot1():
     """
     Produces a plot showing dependence of cleaning time on number of robots.
     """ 
-    raise NotImplementedError
+    avgs = []
+    for n in xrange(1, 11):
+        avg = runSimulation(n, 1.0, 20, 20, .80, 250, StandardRobot)
+        avgs.append(avg)
+    pylab.plot(range(1, 11), avgs)
+    pylab.ylabel('Average Time')
+    pylab.xlabel('Number of Robots')
+    pylab.title('Dependence of time to clean 80% of a 20x20 room on number of' \
+            + ' robots\n')
+    pylab.show()
 
 def showPlot2():
     """
     Produces a plot showing dependence of cleaning time on room shape.
     """
-    raise NotImplementedError
-
+    dimensions = ((20, 20), (25, 16), (40, 10), (50, 8), (80, 5), (100, 4))
+    ratios = [float(d[0]) / d[1] for d in dimensions]
+    avgs = []
+    for d in dimensions:
+        avg = runSimulation(2, 1.0, d[0], d[1], .80, 250, StandardRobot)
+        avgs.append(avg)
+    pylab.plot(ratios, avgs)
+    pylab.ylabel('Mean Time')
+    pylab.xlabel('Ratio of Width to Height of Room')
+    pylab.title('Time to clean 80% of a 400-unit area room with 2 robots,\n' +
+            'for various ratios of room width to height')
+    pylab.show()
+    
 # === Problem 5
 
 class RandomWalkRobot(Robot):
